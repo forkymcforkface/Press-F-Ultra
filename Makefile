@@ -42,6 +42,7 @@ MKSPRITE_FLAGS ?=
 MKFONT_FLAGS ?= --range all
 
 src = \
+	$(SRC_DIR)/bios.c \
 	$(SRC_DIR)/emu.c \
 	$(SRC_DIR)/error.c \
 	$(SRC_DIR)/main.c \

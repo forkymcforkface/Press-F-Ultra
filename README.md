@@ -26,6 +26,22 @@
    - Place `Press-F.z64` in the `menu/emulators` directory.  
    - Load Channel F ROMs with the `.chf` extension directly through N64FlashCartMenu.  
 
+### PhosphorOS BIOS directory
+
+This branch also reads `[path] bios` from `sd:/phosphor/config.ini`:
+
+```ini
+[path]
+bios = sd:/phosphor/data/bios
+```
+
+The configured directory is checked first for `sl31253.bin` and `sl31254.bin`.
+Each file must be exactly 1,024 bytes. Missing or invalid files fall back
+individually to the existing Controller Pak, embedded ROM filesystem and
+`sd:/press-f` sources, in their original order. Missing, empty or invalid
+configuration leaves those original sources available. Paths retain the
+`sd:/` prefix. This does not change where the standalone game browser looks.
+
 ### On the Ares Emulator
 
 - Add `sl31253.bin`, `sl31254.bin`, and any additional cartridge ROMs to the `roms` directory.  

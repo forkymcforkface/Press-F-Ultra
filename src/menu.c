@@ -7,6 +7,7 @@
 #include "libpressf/src/font.h"
 
 #include "emu.h"
+#include "bios.h"
 #include "error.h"
 #include "main.h"
 #include "menu.h"
@@ -141,7 +142,7 @@ static int pfu_controller_pak_write(const char *path, unsigned source)
     unsigned i, j, last_char_was_space = 0;
 
     /* Format Controller Pak if needed */
-    if (cpakfs_fsck(JOYPAD_PORT_1, false, NULL))
+    if (cpakfs_fsck(JOYPAD_PORT_1, false, NULL, NULL))
       pfu_message_switch(PFU_STATE_MENU,
         "The Controller Pak needs to be formatted.\n\n"
         "Please format it in a compatible game and try again.");
@@ -474,6 +475,7 @@ static void pfu_menu_init_roms_source(pfu_menu_ctx_t *menu, const char *src_path
 static void pfu_menu_init_roms(void)
 {
   pfu_menu_ctx_t menu;
+  char bios_path[128];
 
   if (emu.menu_roms.entries)
     free(emu.menu_roms.entries);
@@ -485,6 +487,14 @@ static void pfu_menu_init_roms(void)
   menu.entries[0].type = PFU_ENTRY_TYPE_BACK;
   menu.entries[0].key = PFU_ENTRY_KEY_NONE;
   menu.entry_count = 1;
+
+  if (pfu_bios_path(bios_path, sizeof(bios_path)))
+  {
+    if (!emu.bios_a_loaded)
+      emu.bios_a_loaded = pfu_bios_load(&emu.system.memory[0x0000], bios_path, "sl31253.bin");
+    if (!emu.bios_b_loaded)
+      emu.bios_b_loaded = pfu_bios_load(&emu.system.memory[0x0400], bios_path, "sl31254.bin");
+  }
 
   if (!cpakfs_mount(JOYPAD_PORT_1, "cpak1:/"))
     pfu_menu_init_roms_source(&menu, "cpak1:/", PFU_SOURCE_CONTROLLER_PAK);
@@ -505,7 +515,8 @@ static void pfu_menu_init_roms(void)
   else
     pfu_error_switch(
       "Press F Ultra requires Channel F BIOS data to be stored on\n"
-      "the SD Card in the \"press-f\" directory.\n\n"
+      "the SD Card in the \"press-f\" directory or the [path] bios\n"
+      "directory in sd:/phosphor/config.ini.\n\n"
       "Please include both the $03sl31253.bin$01 and "
       "$03sl31254.bin$01 BIOS images.\n\n"
       "Alternatively, this data can be compiled in statically.\n\n"
